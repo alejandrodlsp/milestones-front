@@ -1,0 +1,56 @@
+import { ref } from 'vue'
+import { defineStore } from 'pinia'
+import { securedHttp } from '@/axios'
+import { toast } from '@/components/ui/toast'
+
+export const useListsStore = defineStore('lists', () => {
+  const lists = ref([])
+  const list = ref({})
+
+  function loadLists() {
+    return securedHttp.get("/api/v1/lists").then(response => {
+      lists.value = response.data;
+    }).catch(error => {
+      toast({
+        title: 'Failed to fetch lists',
+        description: error.message,
+        variant: "destructive"
+      })
+    })
+  }
+
+  function getListDetails(listId) {
+    let promise = securedHttp.get("/api/v1/lists/" + listId)
+    promise.then(response => {
+      list.value = response.data
+    }).catch(error => {
+      toast({
+        title: 'Failed to fetch list',
+        description: error.message,
+        variant: "destructive"
+      })
+    })
+    return promise;
+  }
+
+  function createList(listData) {
+    let promise = securedHttp.post("/api/v1/lists", listData)
+    promise.then(response => {
+      lists.value.push(response.data);
+      toast({
+        title: 'List created successfully',
+        description: response.data.name,
+        variant: "default"
+      })
+    }).catch(error => {
+      toast({
+        title: 'Failed to create list',
+        description: error.message,
+        variant: "destructive"
+      })
+    })
+    return promise;
+  }
+
+  return { lists, list, loadLists, createList, getListDetails }
+})

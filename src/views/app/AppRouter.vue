@@ -1,18 +1,12 @@
 <script setup>
 import Sidebar from '@/components/SideBar.vue'
-
+import BreadcrumbBar from '@/components/BreadcrumbBar.vue';
+import UserProfile from '@/components/auth/UserProfile.vue';
 import { yourMilestones } from './example/data/milestones.js'
 import ColorMode from '@/components/ColorMode.vue';
-
 </script>
 
 <template>
-  <div class="md:hidden">
-    <VPImage alt="Music" width="1280" height="1214" class="block" :image="{
-      dark: '/examples/music-dark.png',
-      light: '/examples/music-light.png',
-    }" />
-  </div>
   <div class="hidden md:block w-full">
     <div class="border-t">
       <div class="bg-background">
@@ -24,7 +18,12 @@ import ColorMode from '@/components/ColorMode.vue';
           <Sidebar :milestones="yourMilestones" class="hidden lg:block" />
 
           <div class="h-full flex-col border-none col-span-6 p-10 data-[state=active]:flex">
+            <BreadcrumbBar />
             <router-view />
+          </div>
+
+          <div class="fixed bottom-4 left-4 z-50">
+            <UserProfile />
           </div>
         </div>
       </div>

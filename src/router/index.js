@@ -3,6 +3,8 @@ import { toast } from '@/components/ui/toast'
 import { AUTH } from './auth'
 import { APP } from './app'
 
+export let activedRoutes = []
+
 const routes = [
   AUTH,
   APP,
@@ -29,6 +31,9 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
+  activedRoutes = [];
+  to.matched.forEach((record) => { activedRoutes.push(record) })
+
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!localStorage.signedIn) {
       toast({

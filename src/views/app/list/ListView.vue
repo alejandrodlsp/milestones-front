@@ -33,9 +33,7 @@ watch(() => props.id, (newId) => {
         {{ list.name }}
       </h2>
       <p class="text-sm text-muted-foreground">
-        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eaque accusamus sit quia! Molestiae voluptatibus
-        voluptas accusamus. Minima deleniti obcaecati, minus sed excepturi assumenda tenetur qui veritatis sit
-        voluptatem praesentium voluptatibus!
+        {{ list.description }}
       </p>
     </div>
   </div>

@@ -15,7 +15,7 @@ import { useListsStore } from '@/stores/lists';
 import CustomCombobox from '../shared/CustomCombobox.vue';
 import { useMilestonesStore } from '@/stores/milestones';
 import { useNavigationStore } from '@/stores/navigation';
-import BreadcrumbBar from '../BreadcrumbBar.vue';
+import router from '@/router'
 
 const navigationStore = useNavigationStore();
 const categoriesStore = useCategoriesStore();
@@ -101,7 +101,9 @@ const onSubmit = handleSubmit((values) => {
     formData.append(`milestone[list_ids][]`, listId);
   });
 
-  milestoneStore.createMilestone(formData);
+  milestoneStore.createMilestone(formData).then((response) => {
+    router.push({ name: 'milestone_view', params: { id: response.data.id } });
+  });
 });
 
 const toggleListSelection = (listId) => {
@@ -123,7 +125,6 @@ const categoriesValues = computed(() => { return categoriesStore.categories.map(
   <div class="max-w-5xl mx-auto flex gap-6 py-6 px-4">
     <!-- Form Section -->
     <div class="w-full lg:w-2/3 space-y-6">
-      <BreadcrumbBar />
       <Card>
         <CardHeader>
           <CardTitle class="text-xl font-semibold">Create Milestone</CardTitle>

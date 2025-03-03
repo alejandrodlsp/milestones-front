@@ -8,5 +8,20 @@ export const useNavigationStore = defineStore('navigation', () => {
     currentTab.value = tab
   }
 
-  return { currentTab, setCurrentTab }
+  const getRoutePath = (route, routeItem) => {
+    const matchedSegments = route.matched.slice(0, route.matched.indexOf(routeItem) + 1);
+    return matchedSegments.map((segment) => segment.path).join('/');
+  }
+
+  function getBreadcrumbs() {
+    const route = this.$route;
+    const matchedRoutes = route.matched;
+    console.log(route)
+    return matchedRoutes.map((routeItem) => ({
+      label: routeItem.meta.breadcrumb || routeItem.name,
+      to: getRoutePath(route, routeItem),
+    }));
+  }
+
+  return { currentTab, setCurrentTab, getBreadcrumbs }
 })

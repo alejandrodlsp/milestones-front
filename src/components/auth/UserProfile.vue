@@ -12,7 +12,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from '@/components/ui/toast'
 import router from '@/router'
-import { ref } from 'vue';
 
 import {
   CreditCard,
@@ -21,16 +20,10 @@ import {
   User,
 } from 'lucide-vue-next'
 import { securedHttp } from '@/axios';
+import { useUsersStore } from '@/stores/users';
 
-const userData = ref({
-  name: '',
-  last_name: '',
-  email: '',
-  created_at: '',
-})
-securedHttp.get('/me').then((response) => {
-  userData.value = response["data"]
-})
+const userStore = useUsersStore()
+userStore.getMe()
 
 const logout = () => {
   securedHttp.delete('/signin')
@@ -60,16 +53,15 @@ const logout = () => {
       <Card class="cursor-pointer">
         <CardContent class="flex items-center space-x-4 pt-5">
           <Avatar>
-            <AvatarImage
-              src="https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/599e3b95636919.5eb96c0445ea7.jpg" />
+            <AvatarImage :src="userStore.me.avatar" />
             <AvatarFallback>AS</AvatarFallback>
           </Avatar>
           <div>
             <p class="text-sm font-medium leading-none">
-              {{ userData.name }}
+              {{ userStore.me.first_name }}
             </p>
             <p class="text-sm text-muted-foreground">
-              {{ userData.email }}
+              {{ userStore.me.email }}
             </p>
           </div>
         </CardContent>
@@ -79,10 +71,12 @@ const logout = () => {
       <DropdownMenuLabel>My Account</DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
-        <DropdownMenuItem>
-          <User class="mr-2 h-4 w-4" />
-          <span>Profile</span>
-        </DropdownMenuItem>
+        <router-link :to="{ name: 'profile_view' }">
+          <DropdownMenuItem>
+            <User class="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </DropdownMenuItem>
+        </router-link>
         <DropdownMenuItem>
           <CreditCard class="mr-2 h-4 w-4" />
           <span>Billing</span>

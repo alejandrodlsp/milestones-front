@@ -5,7 +5,23 @@ import { toast } from '@/components/ui/toast'
 
 export const useMilestonesStore = defineStore('milestones', () => {
   const userMilestones = ref([])
+  const popularMilestones = ref([])
   const milestone = ref({})
+
+  function loadPopularMilestones() {
+    let promise = securedHttp.get("/api/v1/milestones/popular")
+    promise.then(response => {
+      popularMilestones.value = response.data;
+    })
+    promise.catch(error => {
+      toast({
+        title: 'Failed to fetch popular milestones',
+        description: error.message,
+        variant: "destructive"
+      })
+    })
+    return promise;
+  }
 
   function loadUserMilestones() {
     return securedHttp.get("/api/v1/milestones/user_milestones").then(response => {
@@ -89,7 +105,7 @@ export const useMilestonesStore = defineStore('milestones', () => {
   }
 
   function addCheckpoint(milestoneId, checkpointProps) {
-    let promise = securedHttp.post("/api/v1/milestones/" + milestoneId + "/checkpoints", checkpointProps)
+    let promise = securedHttp.post(`/api/v1/milestones/${milestoneId}/checkpoints`, checkpointProps)
     promise.then(response => {
       milestone.value.checkpoints.push(response.data);
     }).catch(error => {
@@ -103,7 +119,7 @@ export const useMilestonesStore = defineStore('milestones', () => {
   }
 
   function deleteCheckpoint(milestoneId, checkpointId) {
-    let promise = securedHttp.delete("/api/v1/milestones/" + milestoneId + "/checkpoints/" + checkpointId)
+    let promise = securedHttp.delete(`/api/v1/milestones/${milestoneId}/checkpoints/${checkpointId}`)
     promise.then(() => {
       milestone.value.checkpoints = milestone.value.checkpoints.filter(checkpoint => checkpoint.id !== checkpointId);
     }).catch(error => {
@@ -116,5 +132,27 @@ export const useMilestonesStore = defineStore('milestones', () => {
     return promise;
   }
 
-  return { userMilestones, milestone, loadUserMilestones, getMilestone, createMilestone, addComment, deleteComment, addCheckpoint, deleteCheckpoint }
+  function updateCheckpoint(milestoneId, checkpointId, props) {
+    let promise = securedHttp.put(`/api/v1/milestones/${milestoneId}/checkpoints/${checkpointId}`, props)
+    promise.then(response => {
+      const updatedCheckpoint = response.data.checkpoint;
+      const index = milestone.value.checkpoints.findIndex(c => c.id === updatedCheckpoint.id);
+      if (index !== -1) {
+        milestone.value.checkpoints[index] = updatedCheckpoint;
+      }
+    })
+    promise.catch(error => {
+      toast({
+        title: "Failed to update checkpoint",
+        description: error.message,
+        variant: "destructive",
+      });
+    });
+  
+    return promise;
+  }
+  
+  
+
+  return { userMilestones, milestone, popularMilestones, loadUserMilestones, getMilestone, createMilestone, addComment, deleteComment, addCheckpoint, deleteCheckpoint, updateCheckpoint, loadPopularMilestones }
 })

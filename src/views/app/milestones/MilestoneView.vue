@@ -18,10 +18,13 @@ const props = defineProps({
 
 const navigationStore = useNavigationStore()
 const milestoneStore = useMilestonesStore();
+const isLoading = ref(true) // Track loading state
 
-const loadData = (id) => {
+const loadData = async (id) => {
+  isLoading.value = true;
   navigationStore.setCurrentTab(`milestone-${id}`)
-  milestoneStore.getMilestone(id)
+  await milestoneStore.getMilestone(id)
+  isLoading.value = false;
 }
 
 loadData(props.id)
@@ -29,35 +32,15 @@ watch(() => props.id, (newId) => {
   loadData(newId)
 })
 
-// Props: Milestone data
-const milestone = ref({
-  name: "Skydive",
-  description: "Experience the ultimate adrenaline rush by completing your first skydive! From saving up for the jump to scheduling the big day, track every step of your journey toward soaring through the skies.",
-  image: "https://media.istockphoto.com/id/507497178/photo/skydiving-photo-tandem.jpg?s=612x612&w=0&k=20&c=_Ot_fQJUZTIH3DxEJmToj-mFnX6ZzwLQNmZq3iRSwCQ=",
-  dueDate: new Date("2022-12-31"),
-  user: {
-    name: "John Doe",
-    avatar: "https://i.pravatar.cc/100?img=1",
-    initials: "JD",
-    email: "john@test.com"
-  },
-  progressCheckpoints: [
-    { date: "2022-01-01", description: "Project started", completed: true },
-    { date: "2022-06-30", description: "Save up 200 euros", completed: true },
-    { date: "2022-06-30", description: "Contact local dropzone", completed: true },
-    { date: "2022-12-31", description: "Jump!", completed: false }
-  ],
-  progressUpdates: [
-    { date: "2022-02-15", description: "Started researching best skydiving spots." },
-    { date: "2022-07-10", description: "Completed first payment for training." },
-    { date: "2022-11-01", description: "Scheduled first jump for December." }
-  ]
+const progress = computed(() => {
+  const checkpoints = milestoneStore.milestone.checkpoints || []
+  const totalCheckpoints = checkpoints.length
+  const completedCheckpoints = checkpoints.filter((checkpoint) => checkpoint.completed_at).length
+  return totalCheckpoints === 0 ? 100 : (completedCheckpoints / totalCheckpoints) * 100
 })
 
-const progress = ref(75)
-
 const formattedDueDate = computed(() => {
-  const date = milestoneStore.milestone.due_date;
+  const date = milestoneStore.milestone?.due_date;
   return date
     ? new Intl.DateTimeFormat('en-US', {
       weekday: 'long',
@@ -78,18 +61,20 @@ const formattedDueDate = computed(() => {
       <Card>
         <CardHeader>
           <CardTitle class="text-2xl font-bold">
-            {{ milestoneStore.milestone.name }}
+            <div v-if="isLoading" class="h-6 w-40 bg-gray-300 dark:bg-gray-700 animate-pulse rounded-md"></div>
+            <span v-else>{{ milestoneStore.milestone.name }}</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <img :src="milestoneStore.milestone.image_url" alt="Milestone"
+          <div v-if="isLoading" class="w-full h-80 bg-gray-300 dark:bg-gray-700 animate-pulse rounded-lg"></div>
+          <img v-else :src="milestoneStore.milestone.image_url" alt="Milestone"
             class="rounded-lg w-full object-cover max-h-80">
 
           <p class="text-muted-foreground mt-4">
             {{ milestoneStore.milestone.description }}
           </p>
 
-          <div class="mt-6">
+          <div class="mt-6" v-if="milestoneStore.milestone.checkpoints?.length > 0">
             <p class="text-sm font-semibold">📈 Progress</p>
             <Progress v-model="progress" class="mt-2" />
             <p class="text-sm text-muted-foreground mt-1">{{ progress }}%</p>
@@ -101,7 +86,7 @@ const formattedDueDate = computed(() => {
       </Card>
 
       <!-- 👤 User Info -->
-      <Card>
+      <Card v-if="milestoneStore.milestone.user">
         <CardHeader>
           <CardTitle class="text-lg">Created by</CardTitle>
         </CardHeader>
@@ -135,7 +120,7 @@ const formattedDueDate = computed(() => {
         </CardHeader>
         <CardContent>
           <ul class="space-y-3">
-            <li v-for="update in milestone.progressUpdates" :key="update.date">
+            <li v-for="update in milestoneStore.milestone.progressUpdates" :key="update.date">
               <p class="text-sm font-medium">{{ update.description }}</p>
               <p class="text-xs text-muted-foreground">📅 {{ update.date }}</p>
               <Separator class="my-2" />

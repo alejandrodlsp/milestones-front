@@ -61,24 +61,26 @@ const formatDate = (date) => {
     </div>
 
     <div v-else>
-      <div v-for="(comment, index) in props.milestone.comments" :key="index"
-        class="flex items-start justify-between space-x-3 mb-4 w-full">
+      <TransitionGroup name="checkpoint">
+        <div v-for="(comment, index) in props.milestone.comments" :key="index"
+          class="flex items-start justify-between space-x-3 mb-4 w-full">
 
-        <div class="flex items-start space-x-3">
-          <UserBadge :user="comment.user">
-            <span class="text-xs text-muted-foreground">{{ formatDate(comment.created_at) }}</span>
-            <p class="text-l">{{ comment.message }}</p>
-            <!-- Date displayed below the name -->
-          </UserBadge>
-        </div>
+          <div class="flex items-start space-x-3">
+            <UserBadge :user="comment.user">
+              <span class="text-xs text-muted-foreground">{{ formatDate(comment.created_at) }}</span>
+              <p class="text-l">{{ comment.message }}</p>
+              <!-- Date displayed below the name -->
+            </UserBadge>
+          </div>
 
-        <!-- Delete button always aligned to the right -->
-        <div class="flex justify-end min-w-[40px]">
-          <Button v-if="isMilestoneOwner" @click="confirmDelete(comment.id)" variant="ghost" size="icon">
-            <Trash2 class="h-4 w-4 text-muted-foreground hover:text-red-500 transition" />
-          </Button>
+          <!-- Delete button always aligned to the right -->
+          <div class="flex justify-end min-w-[40px]">
+            <Button v-if="isMilestoneOwner" @click="confirmDelete(comment.id)" variant="ghost" size="icon">
+              <Trash2 class="h-4 w-4 text-muted-foreground hover:text-red-500 transition" />
+            </Button>
+          </div>
         </div>
-      </div>
+      </TransitionGroup>
     </div>
   </ScrollArea>
 

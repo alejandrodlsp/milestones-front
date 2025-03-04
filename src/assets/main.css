@@ -96,3 +96,22 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Enter and leave animation */
+.checkpoint-enter-active, .checkpoint-leave-active {
+  transition: all 0.3s ease;
+}
+
+.checkpoint-enter-from, .checkpoint-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+/* Apply smooth scaling on click */
+.opacity-50 {
+  opacity: 0.5;
+}
+
+.scale-90 {
+  transform: scale(0.9);
+}

@@ -12,7 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from '@/components/ui/toast'
 import router from '@/router'
-
+import { ref } from 'vue';
+import Skeleton from '@/components/ui/skeleton/Skeleton.vue';
 import {
   CreditCard,
   LogOut,
@@ -23,7 +24,9 @@ import { securedHttp } from '@/axios';
 import { useUsersStore } from '@/stores/users';
 
 const userStore = useUsersStore()
-userStore.getMe()
+
+const loading = ref(true)
+userStore.getMe().then(() => loading.value = false)
 
 const logout = () => {
   securedHttp.delete('/signin')
@@ -52,20 +55,31 @@ const logout = () => {
     <DropdownMenuTrigger as-child>
       <Card class="cursor-pointer">
         <CardContent class="flex items-center space-x-4 pt-5">
-          <Avatar>
-            <AvatarImage :src="userStore.me.avatar" />
-            <AvatarFallback>AS</AvatarFallback>
-          </Avatar>
-          <div>
-            <p class="text-sm font-medium leading-none">
-              {{ userStore.me.first_name }}
-            </p>
-            <p class="text-sm text-muted-foreground">
-              {{ userStore.me.email }}
-            </p>
-          </div>
+          <template v-if="!loading">
+            <Avatar>
+              <AvatarImage :src="userStore.me.avatar" />
+              <AvatarFallback>AS</AvatarFallback>
+            </Avatar>
+            <div>
+              <p class="text-sm font-medium leading-none">
+                {{ userStore.me.first_name }}
+              </p>
+              <p class="text-sm text-muted-foreground">
+                {{ userStore.me.email }}
+              </p>
+            </div>
+          </template>
+
+          <template v-else>
+            <Skeleton class="h-12 w-12 rounded-full" />
+            <div class="space-y-2">
+              <Skeleton class="h-4 w-[150px]" />
+              <Skeleton class="h-4 w-[100px]" />
+            </div>
+          </template>
         </CardContent>
       </Card>
+
     </DropdownMenuTrigger>
     <DropdownMenuContent class="w-56">
       <DropdownMenuLabel>My Account</DropdownMenuLabel>

@@ -1,7 +1,15 @@
 <script setup>
 import { Separator } from '@/components/ui/separator'
-import { popularMilestones, forYouMilestones } from '../example/data/milestones.js'
+import { forYouMilestones } from '../example/data/milestones.js'
 import MilestoneCarroussel from '@/components/milestones/MilestoneCarroussel.vue';
+import { useMilestonesStore } from '@/stores/milestones.js';
+import { ref } from 'vue';
+
+const loading = ref(true)
+const milestonesStore = useMilestonesStore()
+milestonesStore.loadPopularMilestones()
+  .then(() => loading.value = false)
+
 </script>
 
 <template>
@@ -16,7 +24,7 @@ import MilestoneCarroussel from '@/components/milestones/MilestoneCarroussel.vue
     </div>
   </div>
   <Separator class="my-4" />
-  <MilestoneCarroussel :milestones="popularMilestones" />
+  <MilestoneCarroussel :milestones="milestonesStore.popularMilestones" :isLoading="loading" />
 
   <div class="mt-6 space-y-1">
     <h2 class="text-2xl font-semibold tracking-tight">

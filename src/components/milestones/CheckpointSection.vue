@@ -58,7 +58,7 @@ const confirmDelete = (checkpoint) => {
 }
 
 const deleteCheckpoint = () => {
-  if (!isMilestoneOwner()) return;
+  if (!isMilestoneOwner.value) return;
   if (checkpointToDelete.value) {
     milestoneStore.deleteCheckpoint(props.milestone.id, checkpointToDelete.value.id);
   }
@@ -71,7 +71,7 @@ const { appContext } = getCurrentInstance()
 const confetti = appContext.config.globalProperties.$confetti
 
 const completeCheckpoint = async (checkpoint) => {
-  if (!isMilestoneOwner()) return;
+  if (!isMilestoneOwner.value) return;
 
   completingCheckpoint.value = checkpoint.id;
 
@@ -136,7 +136,8 @@ const isMilestoneOwner = computed(() => usersStore.me?.id === props.milestone.us
     <ul class="space-y-3">
       <div v-if="!props.milestone.checkpoints || props.milestone.checkpoints.length === 0"
         class="flex justify-center items-center h-full text-muted-foreground text-sm">
-        No checkpoints yet. Create checkpoints to keep track of your progress!
+        <p v-if="props.milestone.user">No checkpoints yet. Create checkpoints to keep track of your progress!</p>
+        <p v-else>No checkpoints yet. Start this milestone to add your own checkpoints!</p>
       </div>
 
       <TransitionGroup name="checkpoint">

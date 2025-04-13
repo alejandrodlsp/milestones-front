@@ -19,8 +19,8 @@ export const useListsStore = defineStore('lists', () => {
     })
   }
 
-  function getListDetails(listId) {
-    let promise = securedHttp.get("/api/v1/lists/" + listId)
+  function getListDetails(listId, includes = "milestones") {
+    let promise = securedHttp.get("/api/v1/lists/" + listId, { params: { includes }})
     promise.then(response => {
       list.value = response.data
     }).catch(error => {
@@ -52,5 +52,53 @@ export const useListsStore = defineStore('lists', () => {
     return promise;
   }
 
-  return { lists, list, loadLists, createList, getListDetails }
+  function deleteList(listId) {
+    let promise = securedHttp.delete("/api/v1/lists/" + listId)
+    promise.then(response => {
+      list.value = response.data
+
+      console.log(listId)
+      const index = lists.value.findIndex(list => list.id === listId);
+      console.log(index)
+      if (index !== -1) {
+        lists.value.splice(index, 1); // Remove the list from the array
+      }
+    }).catch(error => {
+      toast({
+        title: 'Failed to delete list',
+        description: error.message,
+        variant: "destructive"
+      })
+    })
+    return promise;
+  }
+
+  function updateList(listId, listData) {
+    let promise = securedHttp.put("/api/v1/lists/" + listId, { ...listData, includes: "milestones" });
+  
+    promise.then(response => {
+      list.value = response.data;
+      const index = lists.value.findIndex(l => l.id === response.data.id); 
+      if (index !== -1) {
+        lists.value[index] = response.data;
+      }
+      toast({
+        title: 'List updated successfully',
+        description: response.data.name,
+        variant: "default"
+      });
+  
+    }).catch(error => {
+      toast({
+        title: 'Failed to update list',
+        description: error.message,
+        variant: "destructive"
+      });
+    });
+  
+    return promise;
+  }
+  
+
+  return { lists, list, loadLists, createList, getListDetails, deleteList, updateList }
 })

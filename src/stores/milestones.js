@@ -4,9 +4,27 @@ import { securedHttp } from '@/axios'
 import { toast } from '@/components/ui/toast'
 
 export const useMilestonesStore = defineStore('milestones', () => {
+  const milestones = ref({ milestones: [], meta: { current_page: 1, total_count: 0, total_pages: 1 }})
   const userMilestones = ref([])
   const popularMilestones = ref([])
   const milestone = ref({})
+
+  function loadMilestones({ search = '', category = '', page = 1 }) {
+    let promise = securedHttp.get("/api/v1/milestones", {
+      params: { search, category, page },
+    });
+    promise.then(response => {
+      milestones.value = response.data;
+    })
+    promise.catch(error => {
+      toast({
+        title: 'Failed to fetch milestones',
+        description: error.message,
+        variant: "destructive"
+      })
+    })
+    return promise
+  }
 
   function loadPopularMilestones() {
     let promise = securedHttp.get("/api/v1/milestones/popular")
@@ -154,5 +172,5 @@ export const useMilestonesStore = defineStore('milestones', () => {
   
   
 
-  return { userMilestones, milestone, popularMilestones, loadUserMilestones, getMilestone, createMilestone, addComment, deleteComment, addCheckpoint, deleteCheckpoint, updateCheckpoint, loadPopularMilestones }
+  return { userMilestones, milestone, popularMilestones, milestones, loadUserMilestones, getMilestone, createMilestone, addComment, deleteComment, addCheckpoint, deleteCheckpoint, updateCheckpoint, loadPopularMilestones, loadMilestones }
 })

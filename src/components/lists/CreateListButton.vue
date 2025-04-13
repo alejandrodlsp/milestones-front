@@ -30,8 +30,8 @@ const listStore = useListsStore()
 
 const formSchema = toTypedSchema(
   z.object({
-    name: z.string().min(6),
-    description: z.string().max(300),
+    name: z.string().min(3),
+    description: z.string().max(300).min(5),
   })
 )
 
@@ -46,7 +46,7 @@ const onSubmit = handleSubmit((v) => {
   }
   listStore.createList(payload).then((response) => {
     console.log(response.data.id)
-    router.go({ path: `list/${response.data.id}` })
+    router.push({ name: 'list_view', params: { id: response.data.id } });
   })
 })
 

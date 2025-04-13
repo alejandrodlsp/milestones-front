@@ -1,8 +1,9 @@
 <script setup>
-import { cn } from '@/lib/utils'
-import { Skeleton } from '@/components/ui/skeleton'
+import { ref } from 'vue';
+import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
-defineProps({
+const props = defineProps({
   milestone: null,
   aspectRatio: {
     type: String,
@@ -10,22 +11,29 @@ defineProps({
   },
   width: null,
   height: null
-})
+});
+
+const imageLoaded = ref(false);
+
+const handleImageLoad = () => {
+  imageLoaded.value = true;
+};
 </script>
 
 <template>
   <div :class="cn('space-y-3', $attrs.class ?? '')">
-    <div class="overflow-hidden rounded-md">
-      <RouterLink v-if="milestone" :to="{ path: '/milestone/' + milestone.id }">
-        <img :src="milestone.image" :alt="milestone.name" :width="width" :height="height" :class="cn(
+    <div class="overflow-hidden rounded-md relative">
+      <RouterLink v-if="props.milestone" :to="{ path: '/milestone/' + milestone.id }">
+        <!-- Show Skeleton until image is fully loaded -->
+        <Skeleton v-if="!imageLoaded" class="w-full h-[200px] rounded-md" :width="width" :height="height" />
+
+        <img :src="milestone.image_url" :alt="milestone.name" :width="width" :height="height" :class="cn(
           'h-auto w-auto object-cover transition-all hover:scale-105',
           aspectRatio === 'portrait' ? 'aspect-[3/4]' : 'aspect-square',
-        )">
+          !imageLoaded ? 'opacity-0' : 'opacity-100 transition-opacity duration-500'
+        )" @load="handleImageLoad" />
       </RouterLink>
-      <Skeleton v-else class="w-full h-[200px] rounded-md" :width="width" :height="height" :class="cn(
-        'h-auto w-auto object-cover transition-all hover:scale-105',
-        aspectRatio === 'portrait' ? 'aspect-[3/4]' : 'aspect-square',
-      )" />
+      <Skeleton v-else class="w-full h-[300px] rounded-md" :width="width" :height="height" />
     </div>
 
     <div class="space-y-1 text-sm">

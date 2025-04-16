@@ -13,10 +13,10 @@ const props = defineProps({
 
 <template>
   <div class="space-y-6">
-    <Card>
+    <Card v-if="props.milestone?.lists?.length">
       <CardContent>
         <!-- If milestone is in lists, show them -->
-        <div v-if="props.milestone?.lists?.length" class="mt-4">
+        <div class="mt-4">
           <h3 class="text-lg font-semibold mb-2">This milestone is in your lists:</h3>
           <div class="space-y-1">
             <router-link :to="{ path: '/list/' + list.id }" v-for="list in props.milestone?.lists" :key="list.id"

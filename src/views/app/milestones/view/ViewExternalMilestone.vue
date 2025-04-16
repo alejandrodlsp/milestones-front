@@ -1,5 +1,6 @@
 <script setup>
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import AddMilestoneToListModal from '@/components/milestones/AddMilestoneToListModal.vue';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LucideCopyPlus } from 'lucide-vue-next';
 import { useMilestonesStore } from '@/stores/milestones';
@@ -7,6 +8,7 @@ import CheckpointSection from '@/components/milestones/CheckpointSection.vue';
 
 const milestoneStore = useMilestonesStore();
 </script>
+
 <template>
   <div class="md:col-span-2 space-y-6">
     <Card>
@@ -14,20 +16,7 @@ const milestoneStore = useMilestonesStore();
         <CardTitle class="text-2xl font-bold flex justify-between items-center">
           <div v-if="isLoading" class="h-6 w-40 bg-gray-300 dark:bg-gray-700 animate-pulse rounded-md"></div>
           <span v-else>{{ milestoneStore.milestone.name }}</span>
-
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <button v-if="!milestoneStore.milestone.lists?.length" @click="console.log(1)"
-                  class="p-2 rounded-lg transition duration-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                  <LucideCopyPlus />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                Add to your list
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <AddMilestoneToListModal :milestone-id="milestoneStore.milestone.id" />
         </CardTitle>
       </CardHeader>
 

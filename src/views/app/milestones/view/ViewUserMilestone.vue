@@ -1,16 +1,26 @@
 <script setup>
-import { computed } from 'vue'
 import { useMilestonesStore } from '@/stores/milestones'
 import ListsSection from '@/components/milestones/ListsSection.vue'
 import UserBadge from '@/components/UserBadge.vue'
 import CommentSection from '@/components/milestones/CommentSection.vue'
 import CheckpointSection from '@/components/milestones/CheckpointSection.vue'
-
+import CompleteMilestoneDialog from '@/components/milestones/CompleteMilestoneDialog.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import Button from '@/components/ui/button/Button.vue'
+import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Progress } from '@/components/ui/progress'
-import { Separator } from '@/components/ui/separator'
+import { ref, computed, nextTick, getCurrentInstance } from 'vue';
+import { Dialog, DialogFooter, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { useUsersStore } from '@/stores/users'
+import ShareCompletionDialog from '@/components/milestones/ShareCompletionDialog.vue'
 
 const milestoneStore = useMilestonesStore()
+
+const completeMilestoneDialogOpen = ref(false)
+const deleteMilestoneDialogOpen = ref(false)
+const shareCompletionDialogOpen = ref(false)
+
+const userStore = useUsersStore();
 
 const progress = computed(() => {
   const checkpoints = milestoneStore.milestone.checkpoints || []
@@ -33,6 +43,36 @@ const formattedDueDate = computed(() => {
     }).format(new Date(date))
     : 'No due date';
 });
+
+const canComplete = computed(() => {
+  const checkpoints = milestoneStore.milestone.checkpoints || []
+  return checkpoints.length === 0 || checkpoints.every(cp => cp.completed_at)
+})
+
+
+function deleteMilestone() {
+  alert("TODO")
+}
+
+function completeMilestone() {
+  showConfetti()
+  shareCompletionDialogOpen.value = true;
+}
+
+const completionSummary = ref({})
+
+const { appContext } = getCurrentInstance()
+const confetti = appContext.config.globalProperties.$confetti
+
+const confettiAvailable = ref(true)
+const showConfetti = () => {
+  if (!confettiAvailable.value) return;
+  confettiAvailable.value = false
+  confetti.start();
+  setTimeout(() => { confetti.stop() }, 1000) // Confetti duration
+  setTimeout(() => { confettiAvailable.value = true }, 5000) // Confetti cooldown
+}
+
 </script>
 
 <template>
@@ -62,16 +102,10 @@ const formattedDueDate = computed(() => {
           class="flex justify-end text-gray-600 dark:text-white text-sm p-2 rounded-md mt-1">
           📅 Due date: <span class="ml-1 font-semibold text-gray-800">{{ formattedDueDate }}</span>
         </div>
-      </CardContent>
-    </Card>
-
-    <!-- 👤 User Info -->
-    <Card v-if="milestoneStore.milestone.user">
-      <CardHeader>
-        <CardTitle class="text-lg">Created by</CardTitle>
-      </CardHeader>
-      <CardContent class="flex items-center space-x-4">
-        <UserBadge :user="milestoneStore.milestone.user" />
+        <div v-if="milestoneStore.milestone.user && milestoneStore.milestone.user.id != userStore.me.id"
+          class="flex justify-end text-gray-600 dark:text-white text-sm p-2 rounded-md mt-1">
+          <UserBadge :user="milestoneStore.milestone.user" />
+        </div>
       </CardContent>
     </Card>
 
@@ -93,22 +127,69 @@ const formattedDueDate = computed(() => {
       <CheckpointSection :milestone="milestoneStore.milestone" />
     </Card>
 
-    <!-- 🚀 Progress Updates -->
-    <Card>
-      <CardHeader>
-        <CardTitle class="text-lg">🔄 Progress Updates</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ul class="space-y-3">
-          <li v-for="update in milestoneStore.milestone.progressUpdates" :key="update.date">
-            <p class="text-sm font-medium">{{ update.description }}</p>
-            <p class="text-xs text-muted-foreground">📅 {{ update.date }}</p>
-            <Separator class="my-2" />
-          </li>
-        </ul>
-      </CardContent>
-    </Card>
-
     <ListsSection :milestone="milestoneStore.milestone" />
+
+
+    <div class="flex flex-row justify-center align-baseline mt-5 space-x-2">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <div @click="deleteMilestoneDialogOpen = true">
+              <Button variant="destructive">
+                🗑 Delete Milestone
+              </Button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            Destroy this milestone, and all the dreams it meant...
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      <!-- Confirmation Dialog -->
+      <Dialog :open="deleteMilestoneDialogOpen" @update:open="val => deleteMilestoneDialogOpen = val">
+        <DialogContent class="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Are you sure? 😢</DialogTitle>
+            <p class="text-sm text-muted-foreground mt-2">
+              This action is irreversible. So many dreams will be broken forever... Are you sure you want to delete this
+              milestone?
+            </p>
+          </DialogHeader>
+
+          <DialogFooter class="mt-4">
+            <Button variant="outline" @click="deleteMilestoneDialogOpen = false">Cancel</Button>
+            <Button variant="destructive" @click="deleteMilestone">Yes, Delete it</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <TooltipProvider>
+        <Tooltip v-if="!canComplete">
+          <TooltipTrigger as-child>
+            <div>
+              <Button variant="default" disabled>
+                ✅ Mark as Complete
+              </Button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            You must complete all checkpoints first.
+          </TooltipContent>
+        </Tooltip>
+        <template v-else>
+          <Button variant="default" @click="completeMilestoneDialogOpen = true">
+            ✅ Mark as Complete
+          </Button>
+        </template>
+      </TooltipProvider>
+    </div>
   </div>
+
+  <CompleteMilestoneDialog :open="completeMilestoneDialogOpen"
+    @update:open="(value) => completeMilestoneDialogOpen = value" @completed="completeMilestone"
+    :milestone_id="milestoneStore.milestone.id" />
+
+  <ShareCompletionDialog :open="shareCompletionDialogOpen" @update:open="(value) => shareCompletionDialogOpen = value"
+    :image="completionSummary.files" :summary="completionSummary.summary" />
 </template>

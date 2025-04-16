@@ -98,7 +98,27 @@ export const useListsStore = defineStore('lists', () => {
   
     return promise;
   }
+
+  function addMilestoneToList(listId, milestoneId) {
+    let promise = securedHttp.post("/api/v1/lists/" + listId + "/add_milestone", { milestone_id: milestoneId });
+
+    promise.then(() => {
+      toast({
+        title: 'Milestone added to list',
+        variant: "default"
+      });
+  
+    }).catch(error => {
+      toast({
+        title: 'Failed to add milestone to list',
+        description: error.message,
+        variant: "destructive"
+      });
+    });
+
+    return promise;
+  }
   
 
-  return { lists, list, loadLists, createList, getListDetails, deleteList, updateList }
+  return { lists, list, loadLists, createList, getListDetails, deleteList, updateList, addMilestoneToList }
 })

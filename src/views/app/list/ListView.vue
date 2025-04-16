@@ -202,6 +202,23 @@ const addMilestone = async () => {
     <div class="grid grid-cols-3 gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
       <MilestoneArtwork v-for="milestone in list.milestones" :key="milestone.id" :milestone="milestone"
         :class="'w-[250px]'" :width="250" :height="330" :aspect-ratio="'portrait'" />
+
+      <router-link :to="{ name: 'milestones' }" class="space-y-3 group" :class="'w-[250px]'" :width="250" :height="330">
+        <div
+          class="overflow-hidden rounded-md relative border border-dashed border-muted-foreground hover:border-primary transition-colors aspect-[3/4] flex items-center justify-center bg-muted/40">
+          <LucidePlus class="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors" />
+        </div>
+
+        <div class="space-y-1 text-sm text-center">
+          <h3 class="font-medium leading-none text-muted-foreground group-hover:text-primary transition-colors">
+            Add Milestone
+          </h3>
+          <p class="text-xs text-muted-foreground">
+            Search and add new milestone
+          </p>
+        </div>
+      </router-link>
+
     </div>
   </div>
 </template>

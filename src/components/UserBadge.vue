@@ -84,7 +84,7 @@ const formatDate = (date) => {
       </div>
 
       <DialogFooter class="flex justify-between">
-        <Button @click="navigateToProfile" class="w-1/3">Go to Profile</Button>
+        <!-- <Button @click="navigateToProfile" class="w-1/3">Go to Profile</Button> -->
       </DialogFooter>
     </DialogContent>
   </Dialog>

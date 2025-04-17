@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.BACKEND_API
+const API_URL = import.meta.env.VITE_BACKEND_API
 
 const securedHttp = axios.create({
   baseURL: API_URL,

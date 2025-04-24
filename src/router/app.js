@@ -32,6 +32,15 @@ export const APP =   {
       ]
     },
     {
+      path: 'friends',
+      name: 'friends',
+      component: () => import('../views/app/friends/FriendsView.vue'),
+      meta: {
+        requiresAuth: true,
+        breadcrumb: { label: 'Friends' }
+      }
+    },
+    {
       path: 'milestone',
       name: 'milestone',
       meta: {

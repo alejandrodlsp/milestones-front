@@ -9,10 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Button from '@/components/ui/button/Button.vue'
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Progress } from '@/components/ui/progress'
-import { ref, computed, nextTick, getCurrentInstance } from 'vue';
+import { ref, computed, getCurrentInstance } from 'vue';
 import { Dialog, DialogFooter, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useUsersStore } from '@/stores/users'
 import ShareCompletionDialog from '@/components/milestones/ShareCompletionDialog.vue'
+import AddMilestoneToListModal from '@/components/milestones/AddMilestoneToListModal.vue';
 
 const milestoneStore = useMilestonesStore()
 
@@ -49,9 +50,8 @@ const canComplete = computed(() => {
   return checkpoints.length === 0 || checkpoints.every(cp => cp.completed_at)
 })
 
-
 function deleteMilestone() {
-  alert("TODO")
+  milestoneStore.deleteMilestone(milestoneStore.milestone.id)
 }
 
 function completeMilestone() {
@@ -73,6 +73,9 @@ const showConfetti = () => {
   setTimeout(() => { confettiAvailable.value = true }, 5000) // Confetti cooldown
 }
 
+const isUser = computed(() => {
+  return userStore.me.id === milestoneStore.milestone.user.id;
+})
 </script>
 
 <template>
@@ -82,6 +85,7 @@ const showConfetti = () => {
         <CardTitle class="text-2xl font-bold">
           <div v-if="isLoading" class="h-6 w-40 bg-gray-300 dark:bg-gray-700 animate-pulse rounded-md"></div>
           <span v-else>{{ milestoneStore.milestone.name }}</span>
+          <AddMilestoneToListModal v-if="!isUser" :milestone-id="milestoneStore.milestone.id" />
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -102,8 +106,7 @@ const showConfetti = () => {
           class="flex justify-end text-gray-600 dark:text-white text-sm p-2 rounded-md mt-1">
           📅 Due date: <span class="ml-1 font-semibold text-gray-800">{{ formattedDueDate }}</span>
         </div>
-        <div v-if="milestoneStore.milestone.user && milestoneStore.milestone.user.id != userStore.me.id"
-          class="flex justify-end text-gray-600 dark:text-white text-sm p-2 rounded-md mt-1">
+        <div v-if="!isUser" class="flex justify-end text-gray-600 dark:text-white text-sm p-2 rounded-md mt-1">
           <UserBadge :user="milestoneStore.milestone.user" />
         </div>
       </CardContent>
@@ -131,7 +134,7 @@ const showConfetti = () => {
 
 
     <div class="flex flex-row justify-center align-baseline mt-5 space-x-2">
-      <TooltipProvider>
+      <TooltipProvider v-if="isUser">
         <Tooltip>
           <TooltipTrigger as-child>
             <div @click="deleteMilestoneDialogOpen = true">
@@ -164,7 +167,7 @@ const showConfetti = () => {
         </DialogContent>
       </Dialog>
 
-      <TooltipProvider>
+      <TooltipProvider v-if="isUser">
         <Tooltip v-if="!canComplete">
           <TooltipTrigger as-child>
             <div>

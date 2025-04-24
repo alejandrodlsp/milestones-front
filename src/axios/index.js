@@ -41,10 +41,11 @@ securedHttp.interceptors.response.use(null, error => {
         retryConfig.headers['X-CSRF-TOKEN'] = localStorage.csrf
         return plainHttp.request(retryConfig)
       }).catch(error => {
-        delete localStorage.csrf
-        delete localStorage.signedIn
+        console.log(error)
+        // delete localStorage.csrf
+        // delete localStorage.signedIn
         // redirect to signin if refresh fails
-        location.replace('/')
+        // location.replace('/')
         return Promise.reject(error)
       })
   } else {

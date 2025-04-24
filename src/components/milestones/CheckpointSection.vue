@@ -1,26 +1,16 @@
 <script setup>
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LucideCheckCircle, LucideCircleDashed, Trash2 } from 'lucide-vue-next'
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
 import { LucidePlus } from 'lucide-vue-next'
 import { ref, computed, nextTick, getCurrentInstance } from 'vue';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import * as z from 'zod'
-import { toTypedSchema } from '@vee-validate/zod'
-import { useForm } from 'vee-validate'
 import { useMilestonesStore } from '@/stores/milestones'
 import { toast } from '@/components/ui/toast'
 import { useUsersStore } from '@/stores/users'
+import DeleteCheckpointModal from './checkpoints/DeleteCheckpointModal.vue'
+import CreateCheckpointModal from './checkpoints/CreateCheckpointModal.vue'
 
 const usersStore = useUsersStore()
 const milestoneStore = useMilestonesStore()
@@ -34,23 +24,6 @@ const props = defineProps({
 const isCreateDialogOpen = ref(false)
 const isDeleteDialogOpen = ref(false)
 const checkpointToDelete = ref(null)
-
-const formSchema = toTypedSchema(
-  z.object({
-    name: z.string().min(2)
-  })
-)
-
-const { handleSubmit, meta } = useForm({
-  validationSchema: formSchema,
-})
-
-const onSubmit = handleSubmit((v) => {
-  const payload = {
-    name: v.name
-  }
-  milestoneStore.addCheckpoint(props.milestone.id, payload)
-})
 
 const confirmDelete = (checkpoint) => {
   checkpointToDelete.value = checkpoint;
@@ -95,7 +68,6 @@ const completeCheckpoint = async (checkpoint) => {
     completingCheckpoint.value = null;
   }
 };
-const canSubmit = computed(() => meta.value.valid)
 
 const formattedDate = (date) => {
   return date
@@ -110,6 +82,10 @@ const formattedDate = (date) => {
     }).format(new Date(date))
     : 'No completion date';
 };
+
+const createCheckpoint = (payload) => {
+  milestoneStore.addCheckpoint(props.milestone.id, payload)
+}
 
 const confettiAvailable = ref(true)
 const showConfetti = () => {
@@ -174,47 +150,8 @@ const isMilestoneOwner = computed(() => usersStore.me?.id === props.milestone.us
     </ul>
   </CardContent>
 
-  <Dialog v-model:open="isCreateDialogOpen">
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>Create Progress Checkpoint</DialogTitle>
-      </DialogHeader>
-
-      <form @submit="onSubmit">
-        <div class="grid gap-4 py-4">
-          <FormField v-slot="{ componentField }" name="name">
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input type="text" placeholder="Name your progress checkpoint" v-bind="componentField" />
-              </FormControl>
-              <FormMessage class="text-sm text-right" />
-            </FormItem>
-          </FormField>
-        </div>
-        <DialogFooter>
-          <DialogClose as-child>
-            <Button type="submit" :disabled="!canSubmit">
-              Create
-            </Button>
-          </DialogClose>
-        </DialogFooter>
-      </form>
-    </DialogContent>
-  </Dialog>
-
-  <Dialog v-model:open="isDeleteDialogOpen">
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>Confirm Deletion</DialogTitle>
-      </DialogHeader>
-      <p>Are you sure you want to delete this checkpoint?</p>
-      <DialogFooter>
-        <DialogClose as-child>
-          <Button variant="secondary">Cancel</Button>
-        </DialogClose>
-        <Button variant="destructive" @click="deleteCheckpoint">Delete</Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
+  <CreateCheckpointModal :open="isCreateDialogOpen" @close="isCreateDialogOpen = false"
+    @confirmCreate="createCheckpoint" />
+  <DeleteCheckpointModal :open="isDeleteDialogOpen" @close="isDeleteDialogOpen = false"
+    @confirmDelete="deleteCheckpoint" />
 </template>

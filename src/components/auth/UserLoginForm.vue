@@ -51,6 +51,7 @@ const onLoginSuccess = (response) => {
   }
   toast({ title: 'Logged In' })
 
+  console.log(response.data.csrf)
   localStorage.csrf = response.data.csrf
   localStorage.signedIn = true
 

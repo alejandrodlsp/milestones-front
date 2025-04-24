@@ -73,7 +73,7 @@ const saveChanges = async () => {
     name: editedName.value,
     description: editedDescription.value,
   });
-  toast.add({ title: "List updated successfully!" });
+
   isEditing.value = false;
   errors.value = { name: "", description: "" };
 };
@@ -110,7 +110,7 @@ const addMilestone = async () => {
     <div class="space-y-2 w-full">
       <!-- Normal Display Mode -->
       <div v-if="!isEditing">
-        <h2 class="text-2xl font-semibold tracking-tight">
+        <h2 class="text-2xl mt-2 font-semibold tracking-tight">
           {{ list.name }}
         </h2>
         <p class="text-sm text-muted-foreground">

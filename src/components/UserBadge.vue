@@ -1,10 +1,12 @@
 <script setup>
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useFriendStore } from '@/stores/friends'
+import Button from './ui/button/Button.vue'
+
+const friendStore = useFriendStore();
 
 const props = defineProps({
   user: {
@@ -18,18 +20,38 @@ const userInitials = computed(() => {
   return (first + last).toUpperCase()
 })
 
-const isDialogOpen = ref(false)  // Dialog open state
-const router = useRouter()  // Vue Router instance
+const isDialogOpen = ref(false)
 
 // Open the dialog
 const openDialog = () => {
   isDialogOpen.value = true
+  friendStore.loadFriendshipStatus(props.user.id)
 }
 
-// Navigate to the user's profile page
-const navigateToProfile = () => {
-  router.push({ name: 'user-profile', params: { userId: props.user.id } })  // Adjust based on your route
-  isDialogOpen.value = false  // Close the dialog after navigation
+const statusLabel = computed(() => {
+  switch (friendStore.friendshipStatus) {
+    case 'sent':
+      return 'Friend request sent';
+    case 'rejected':
+      return 'Friend request rejected';
+    default:
+      return 'Unknown';
+  }
+})
+
+const sendFriendRequest = () => {
+  friendStore.sendFriendRequest(props.user.id)
+  isDialogOpen.value = false
+}
+
+const acceptFriendRequest = () => {
+  friendStore.acceptFriendRequest(props.user.id)
+  isDialogOpen.value = false
+}
+
+const removeFriend = () => {
+  friendStore.removeFriend(props.user.id)
+  isDialogOpen.value = false
 }
 
 const formatDate = (date) => {
@@ -63,7 +85,6 @@ const formatDate = (date) => {
     </div>
   </div>
 
-  <!-- User Info Dialog -->
   <Dialog v-model:open="isDialogOpen">
     <DialogContent class="rounded-xl p-6 space-y-4 bg-white border shadow-lg">
       <DialogHeader class="text-center">
@@ -80,18 +101,43 @@ const formatDate = (date) => {
           <p class="text-lg font-semibold">{{ props.user?.first_name }} {{ props.user?.last_name }}</p>
           <p class="text-sm text-muted-foreground">Email: {{ props.user?.email }}</p>
           <p class="text-sm text-muted-foreground">Joined: {{ formatDate(props.user?.join_date) }}</p>
+
+          <p class="text-sm text-muted-foreground" v-if="friendStore.friendshipStatus === 'accepted'">Friends since: {{
+            formatDate(friendStore.friendship?.updated_at) }}</p>
         </div>
       </div>
 
       <DialogFooter class="flex justify-between">
-        <!-- <Button @click="navigateToProfile" class="w-1/3">Go to Profile</Button> -->
+        <div v-if="friendStore.friendshipStatus === 'sent' || friendStore.friendshipStatus === 'rejected'">
+          <span :class="{
+            'bg-gray-500': friendStore.friendshipStatus === 'sent',
+            'bg-red-500': friendStore.friendshipStatus === 'rejected'
+          }" class="inline-block px-3 py-1 rounded-full text-white text-xs font-semibold">
+            {{ statusLabel }}
+          </span>
+        </div>
+
+        <Button :variant="destructive" v-if="friendStore.friendshipStatus === 'accepted'" @click="removeFriend"
+          class="w-1/3 bg-red-700">
+          Remove friend
+        </Button>
+
+
+        <Button v-if="friendStore.friendshipStatus === 'not_friends'" @click="sendFriendRequest"
+          class="w-1/3 bg-blue-500 hover:bg-blue-600">
+          Send Friend Request
+        </Button>
+
+        <Button v-if="friendStore.friendshipStatus === 'pending'" @click="acceptFriendRequest"
+          class="w-1/3 bg-yellow-500 hover:bg-yellow-600">
+          Accept Friend Request
+        </Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>
 </template>
 
 <style scoped>
-/* Enhancements to make the profile dialog more aesthetic */
 .dialog-content {
   max-width: 400px;
   padding: 1rem;

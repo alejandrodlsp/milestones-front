@@ -4,9 +4,11 @@ import { securedHttp } from '@/axios'
 import { toast } from '@/components/ui/toast'
 
 export const useMilestonesStore = defineStore('milestones', () => {
-  const milestones = ref({ milestones: [], meta: { current_page: 1, total_count: 0, total_pages: 1 }})
+  const milestones = ref({ milestones: [], meta: { current_page: 1, total_count: 0, total_pages: 1 } })
   const userMilestones = ref([])
+  const friendMilestones = ref([])
   const popularMilestones = ref([])
+  const recommendedMilestones = ref([])
   const milestone = ref({})
 
   function loadMilestones({ search = '', category = '', page = 1 }) {
@@ -42,8 +44,8 @@ export const useMilestonesStore = defineStore('milestones', () => {
   }
 
   function loadUserMilestones() {
-    return securedHttp.get("/api/v1/milestones/user_milestones").then(response => {
-      userMilestones.value = response.data;
+    return securedHttp.get("/api/v1/milestones/from_user").then(response => {
+      userMilestones.value = response.data.milestones;
     }).catch(error => {
       toast({
         title: 'Failed to fetch user milestones',
@@ -53,8 +55,32 @@ export const useMilestonesStore = defineStore('milestones', () => {
     })
   }
 
+  function loadFromFriendsMilestones() {
+    return securedHttp.get("/api/v1/milestones/from_friends").then(response => {
+      friendMilestones.value = response.data.milestones;
+    }).catch(error => {
+      toast({
+        title: 'Failed to fetch friend milestones',
+        description: error.message,
+        variant: "destructive"
+      })
+    })
+  }
+
+  function loadRecommendedMilestones() {
+    return securedHttp.get("/api/v1/milestones/recommendations").then(response => {
+      recommendedMilestones.value = response.data.milestones;
+    }).catch(error => {
+      toast({
+        title: 'Failed to fetch recommended milestones',
+        description: error.message,
+        variant: "destructive"
+      })
+    })
+  }
+
   function getMilestone(milestoneId, includes = "user,comments,lists,checkpoints") {
-    let promise = securedHttp.get("/api/v1/milestones/" + milestoneId, { params: { includes }})
+    let promise = securedHttp.get("/api/v1/milestones/" + milestoneId, { params: { includes } })
     promise.then(response => {
       milestone.value = response.data
     }).catch(error => {
@@ -66,12 +92,30 @@ export const useMilestonesStore = defineStore('milestones', () => {
     })
     return promise;
   }
-  
+
+  function deleteMilestone(milestoneId) {
+    let promise = securedHttp.delete("/api/v1/milestones/" + milestoneId)
+    promise.then(() => {
+      toast({
+        title: 'Milestone deleted successfully',
+        variant: "default"
+      })
+    }).catch(error => {
+      toast({
+        title: 'Failed to delete milestone',
+        description: error.message,
+        variant: "destructive"
+      })
+    })
+    return promise;
+  }
+
   function createMilestone(formData) {
     let promise = securedHttp.post("/api/v1/milestones", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
-      }}
+      }
+    }
     )
     promise.then(response => {
       userMilestones.value.push(response.data);
@@ -107,7 +151,7 @@ export const useMilestonesStore = defineStore('milestones', () => {
   function deleteComment(milestoneId, commentId) {
     let promise = securedHttp.delete("/api/v1/milestones/" + milestoneId + "/comments/" + commentId)
     promise.then(() => {
-      milestone.value.comments = milestone.value.comments.filter(comment => comment.id!== commentId);
+      milestone.value.comments = milestone.value.comments.filter(comment => comment.id !== commentId);
       toast({
         title: 'Comment deleted successfully',
         variant: "default"
@@ -166,11 +210,9 @@ export const useMilestonesStore = defineStore('milestones', () => {
         variant: "destructive",
       });
     });
-  
+
     return promise;
   }
-  
-  
 
-  return { userMilestones, milestone, popularMilestones, milestones, loadUserMilestones, getMilestone, createMilestone, addComment, deleteComment, addCheckpoint, deleteCheckpoint, updateCheckpoint, loadPopularMilestones, loadMilestones }
+  return { userMilestones, friendMilestones, recommendedMilestones, milestone, popularMilestones, milestones, loadUserMilestones, deleteMilestone, loadFromFriendsMilestones, getMilestone, createMilestone, addComment, deleteComment, addCheckpoint, deleteCheckpoint, updateCheckpoint, loadPopularMilestones, loadRecommendedMilestones, loadMilestones }
 })

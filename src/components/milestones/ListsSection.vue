@@ -1,5 +1,5 @@
 <script setup>
-import { LucideCopyPlus } from 'lucide-vue-next';
+import { FolderHeartIcon } from 'lucide-vue-next';
 import { Card, CardContent } from '@/components/ui/card'
 import { defineProps } from 'vue';
 
@@ -21,7 +21,7 @@ const props = defineProps({
           <div class="space-y-1">
             <router-link :to="{ path: '/list/' + list.id }" v-for="list in props.milestone?.lists" :key="list.id"
               class="flex items-center gap-2 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-              <LucideCopyPlus class="text-gray-500 dark:text-gray-400" />
+              <FolderHeartIcon />
               <span class="font-medium">{{ list.name }}</span>
             </router-link>
           </div>

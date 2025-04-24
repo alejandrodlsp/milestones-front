@@ -2,7 +2,7 @@
 import AddMilestoneToListModal from '@/components/milestones/AddMilestoneToListModal.vue';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { LucideCopyPlus } from 'lucide-vue-next';
+import { FolderHeartIcon } from 'lucide-vue-next';
 import { useMilestonesStore } from '@/stores/milestones';
 import CheckpointSection from '@/components/milestones/CheckpointSection.vue';
 
@@ -38,17 +38,17 @@ const milestoneStore = useMilestonesStore();
       </Card>
     </div>
 
-    <div class="space-y-6">
+    <div class="space-y-6" v-if="milestoneStore.milestone.lists?.length">
       <Card>
         <CardContent>
           <!-- If milestone is in lists, show them -->
-          <div v-if="milestoneStore.milestone.lists?.length" class="mt-4">
+          <div class="mt-4">
             <h3 class="text-lg font-semibold mb-2">This milestone is in your lists:</h3>
             <div class="space-y-2">
               <router-link :to="{ path: '/list/' + list.id }" v-for="list in milestoneStore.milestone.lists"
                 :key="list.id"
                 class="flex items-center gap-2 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-                <LucideCopyPlus class="text-gray-500 dark:text-gray-400" />
+                <FolderHeartIcon />
                 <span class="font-medium">{{ list.name }}</span>
               </router-link>
             </div>

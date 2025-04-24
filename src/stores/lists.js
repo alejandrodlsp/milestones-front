@@ -54,15 +54,8 @@ export const useListsStore = defineStore('lists', () => {
 
   function deleteList(listId) {
     let promise = securedHttp.delete("/api/v1/lists/" + listId)
-    promise.then(response => {
-      list.value = response.data
-
-      console.log(listId)
-      const index = lists.value.findIndex(list => list.id === listId);
-      console.log(index)
-      if (index !== -1) {
-        lists.value.splice(index, 1); // Remove the list from the array
-      }
+    promise.then(() => {
+      loadLists()
     }).catch(error => {
       toast({
         title: 'Failed to delete list',

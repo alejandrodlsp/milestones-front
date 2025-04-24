@@ -16,6 +16,10 @@ import CustomCombobox from '../shared/CustomCombobox.vue';
 import { useMilestonesStore } from '@/stores/milestones';
 import { useNavigationStore } from '@/stores/navigation';
 import router from '@/router'
+import { LucidePlus } from 'lucide-vue-next'
+import CreateCheckpointModal from './checkpoints/CreateCheckpointModal.vue';
+import DeleteCheckpointModal from './checkpoints/DeleteCheckpointModal.vue';
+import { Trash2, MilestoneIcon } from 'lucide-vue-next'
 
 const navigationStore = useNavigationStore();
 const categoriesStore = useCategoriesStore();
@@ -92,13 +96,16 @@ const onSubmit = handleSubmit((values) => {
   formData.append("milestone[due_date]", values.dueDate);
   formData.append("milestone[image]", imageFile.value);
   formData.append("milestone[private]", true);
-
   selectedCategories.value.forEach((categoryId) => {
     formData.append(`milestone[category_ids][]`, categoryId);
   });
 
   selectedLists.value.forEach((listId) => {
     formData.append(`milestone[list_ids][]`, listId);
+  });
+
+  checkpoints.value.forEach((checkpoint) => {
+    formData.append(`milestone[checkpoints_attributes][]`, checkpoint);
   });
 
   milestoneStore.createMilestone(formData).then((response) => {
@@ -113,6 +120,23 @@ const toggleListSelection = (listId) => {
     selectedLists.value.push(listId);
   }
 };
+
+const checkpoints = ref([])
+const isCreateDialogOpen = ref(false)
+const createMilestoneCheckpoint = (payload) => {
+  checkpoints.value.push(payload)
+}
+
+const checkpointToDelete = ref(null)
+const isDeleteDialogOpen = ref(false)
+const deleteMilestoneCheckpoint = (index) => {
+  checkpoints.value.splice(index, 1)
+}
+
+const confirmDelete = (index) => {
+  checkpointToDelete.value = index
+  isDeleteDialogOpen.value = true
+}
 
 watch(() => selectedCategories.value, () => {
   validateCategories();
@@ -182,8 +206,47 @@ const categoriesValues = computed(() => { return categoriesStore.categories.map(
           <Button @click="onSubmit" class="w-full">Create Milestone</Button>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader class="flex justify-between">
+          <div class="flex justify-between space-x-2">
+            <CardTitle class="text-lg">🏁 Progress Checkpoints</CardTitle>
+            <Button @click="isCreateDialogOpen = true" variant="ghost" class="p-2">
+              <LucidePlus class="w-5 h-5 text-blue-500" />
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent>
+          <ul class="space-y-3">
+            <div v-if="checkpoints.length === 0"
+              class="flex justify-center items-center h-full text-muted-foreground text-sm">
+              No checkpoints yet. Create checkpoints to keep track of your progress!
+            </div>
+
+            <TransitionGroup name="checkpoint">
+              <li v-for="(checkpoint, i) in checkpoints" :key="checkpoint.id" class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <MilestoneIcon />
+                  <p class="text-sm font-medium">{{ checkpoint.name }}
+                  </p>
+                </div>
+                <Button variant="ghost" class="p-2" @click="confirmDelete(i)">
+                  <Trash2 class="h-4 w-4 text-muted-foreground hover:text-red-500 transition" />
+                </Button>
+              </li>
+            </TransitionGroup>
+
+          </ul>
+        </CardContent>
+      </Card>
     </div>
   </div>
+
+  <CreateCheckpointModal :open="isCreateDialogOpen" @close="isCreateDialogOpen = false"
+    @confirmCreate="createMilestoneCheckpoint" />
+  <DeleteCheckpointModal :open="isDeleteDialogOpen" @close="isDeleteDialogOpen = false"
+    @confirmDelete="deleteMilestoneCheckpoint" />
 </template>
 
 <style>

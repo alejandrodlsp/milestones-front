@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/components/ui/toast";
 import { ref, computed } from "vue";
-
+import CreateListButton from "../lists/CreateListButton.vue";
 import { useListsStore } from "@/stores/lists";
 
 const props = defineProps({
@@ -83,6 +83,10 @@ const confirmAdd = async () => {
           <label :for="'list-' + list.id" class="text-sm">
             {{ list.name }}
           </label>
+        </div>
+
+        <div class="mt-5">
+          <CreateListButton />
         </div>
       </ScrollArea>
 

@@ -9,7 +9,6 @@ import {
 
 import { PlusCircledIcon } from '@radix-icons/vue'
 import RecommendedView from './RecommendedView.vue';
-import FromFriendsView from './FromFriendsView.vue';
 import SearchView from './SearchView.vue';
 import { useNavigationStore } from '@/stores/navigation';
 
@@ -26,9 +25,6 @@ navigationStore.setCurrentTab("milestones")
             <TabsTrigger value="recommended" class="relative">
               Recommended
             </TabsTrigger>
-            <TabsTrigger value="from_friends">
-              From Friends
-            </TabsTrigger>
             <TabsTrigger value="search">
               Search
             </TabsTrigger>
@@ -44,10 +40,6 @@ navigationStore.setCurrentTab("milestones")
         </div>
         <TabsContent value="recommended" class="border-none p-0 outline-none">
           <RecommendedView />
-        </TabsContent>
-
-        <TabsContent value="from_friends" class="border-none p-0 outline-none">
-          <FromFriendsView />
         </TabsContent>
 
         <TabsContent value="search" class="h-full flex-col border-none p-0 data-[state=active]:flex">

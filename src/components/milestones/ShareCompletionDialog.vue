@@ -11,6 +11,7 @@ import { useMilestonesStore } from '@/stores/milestones';
 const emit = defineEmits(['update:open', 'confirm'])
 const milestoneCompletionStore = useMilestoneCompletionStore()
 const milestoneStore = useMilestonesStore()
+const API_URL = import.meta.env.VITE_BACKEND_API
 
 const props = defineProps({
   open: Boolean
@@ -18,18 +19,14 @@ const props = defineProps({
 
 function shareOnTwitter() {
   const text = encodeURIComponent("¡Mira este hito increíble!");
-  const backendUrl = 'http://localhost:3000';
-  const milestoneId = 44;
-  const url = encodeURIComponent(`${backendUrl}/api/v1/milestone-share/${milestoneId}`)
+  const url = encodeURIComponent(`${API_URL}/api/v1/milestone-share/${milestoneStore.milestone.id}`)
 
   const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
   window.open(shareUrl, "_blank", "width=600,height=400");
 }
 
 function shareOnFacebook() {
-  const backendUrl = 'http://localhost:3000';
-  const milestoneId = 44;
-  const url = encodeURIComponent(`${backendUrl}/api/v1/milestone-share/${milestoneId}`)
+  const url = encodeURIComponent(`${API_URL}/api/v1/milestone-share/${milestoneStore.milestone.id}`)
 
   const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
   window.open(shareUrl, "_blank", "width=600,height=400");
